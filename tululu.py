@@ -20,7 +20,6 @@ def parse_book_page(url, book_url):
     title_tag = soup.find('h1')
     title_text = title_tag.text.split('::')
     title = title_text[0].strip() if title_tag else None
-    author = title_text[1].strip() if title_tag else None
 
     book_img_src = soup.find(class_='bookimage').find('img')['src']
     img_url = urljoin(url, book_img_src) if book_img_src else None
@@ -31,13 +30,15 @@ def parse_book_page(url, book_url):
     genres_elements = soup.find('span', class_='d_book').find_all('a')
     genres = [genre.text for genre in genres_elements]
 
-    return title, author, img_url, comments, genres
+    return title, img_url, comments, genres
 
 
-def download_txt(response, title, comments, book_id, folder='books/'):
+def download_txt(response, title, comments, book_id, genres, folder='books/'):
     sanitized_title = sanitize_filename(title)
     filename = f'{book_id}.{sanitized_title}.txt'
     with open(os.path.join(folder, filename), 'w', encoding='utf-8') as file:
+        for genre in genres:
+            file.write(genre + '\n\n')
         for comment in comments:
             file.write(comment + '\n\n')
         file.write(response.text)
@@ -87,15 +88,16 @@ def main():
         except HTTPError:
             continue
 
-        title, author, img_url, comments, genres = parse_book_page(url,book_url)
-        download_txt(response,
-                  title,
-                  comments,
-                  book_id)
+        title, img_url, comments, genres = parse_book_page(url, book_url)
+        if 'Научная фантастика' in genres:
+            download_txt(response,
+                    title,
+                    comments,
+                    book_id,
+                    genres)
     
-        download_image(img_url,
-                   book_id)
-        print(f'Заголовок: {title}\nАвтор: {author}\nЖанры: {genres}')
+            download_image(img_url,
+                    book_id)
 
 
 if __name__ == "__main__":
