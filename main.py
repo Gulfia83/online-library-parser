@@ -12,46 +12,25 @@ def check_for_redirect(response):
         raise HTTPError('Redirection occurred')
     
 
-def get_book_title(book_url):
+def parse_book_page(url, book_url):
     response = requests.get(book_url)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, 'lxml')
     title_tag = soup.find('h1')
     title_text = title_tag.text.split('::')
     title = title_text[0].strip() if title_tag else None
+    author = title_text[1].strip() if title_tag else None
 
-    return title
-
-
-def get_image_url(book_url):
-    base_url = 'https://tululu.org'
-    response = requests.get(book_url)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.text, 'lxml')
     book_img_src = soup.find(class_='bookimage').find('img')['src']
-    img_url = urljoin(base_url, book_img_src) if book_img_src else None
+    img_url = urljoin(url, book_img_src) if book_img_src else None
 
-    return img_url
-
-
-def get_comments(book_url):
-    response = requests.get(book_url)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.text, 'lxml')
     comments_elements = soup.find_all('div', class_='texts')
     comments = [comment.find('span', class_='black').text for comment in comments_elements]
 
-    return comments
-
-
-def get_genres(book_url):
-    response = requests.get(book_url)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.text, 'lxml')
     genres_elements = soup.find('span', class_='d_book').find_all('a')
     genres = [genre.text for genre in genres_elements]
 
-    return genres
+    return title, author, img_url, comments, genres
 
 
 def download_txt(response, title,book_id, folder='books/'):
@@ -62,7 +41,7 @@ def download_txt(response, title,book_id, folder='books/'):
 
 
 def download_image(img_url, book_id, folder='images/'):
-    response = requests.get(image_url)
+    response = requests.get(img_url)
     response.raise_for_status()
 
     split_url = urlsplit(img_url)
@@ -77,8 +56,8 @@ os.makedirs('books', exist_ok=True)
 os.makedirs('images', exist_ok=True)
 
 download_url = f'https://tululu.org/txt.php'
-
-""" for book_id in range(1, 11):
+url = 'https://tululu.org/'
+for book_id in range(1, 11):
     book_url = f'https://tululu.org/b{book_id}/'
     params = {
     'id': book_id
@@ -90,14 +69,14 @@ download_url = f'https://tululu.org/txt.php'
     except HTTPError:
         continue
 
-    title = get_book_title(book_url)
+    title, author, img_url, comments, genres = parse_book_page(url,book_url)
     download_txt(response,
                   title,
                   book_id)
-    image_url = get_image_url(book_url)
+    
     download_image(img_url,
                    book_id)
-    comments = get_comments(book_url) """
+    print(f'Заголовок: {title}\nАвтор: {author}\nЖанры: {genres}')
 
 
 
