@@ -4,6 +4,7 @@ from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin, urlsplit, unquote
+import argparse
 
 
 
@@ -33,11 +34,13 @@ def parse_book_page(url, book_url):
     return title, author, img_url, comments, genres
 
 
-def download_txt(response, title,book_id, folder='books/'):
+def download_txt(response, title, comments, book_id, folder='books/'):
     sanitized_title = sanitize_filename(title)
     filename = f'{book_id}.{sanitized_title}.txt'
-    with open(os.path.join(folder, filename), 'wb') as file:
-        file.write(response.content)
+    with open(os.path.join(folder, filename), 'w', encoding='utf-8') as file:
+        for comment in comments:
+            file.write(comment + '\n\n')
+        file.write(response.text)
 
 
 def download_image(img_url, book_id, folder='images/'):
@@ -51,32 +54,56 @@ def download_image(img_url, book_id, folder='images/'):
     with open(os.path.join(folder, img_name), 'wb') as file:
         file.write(response.content)
 
+def main():
+    parser = argparse.ArgumentParser(
+        description='Скачивание книг с сайта tululu.org'
+    )
+    parser.add_argument('--start_id',
+                        type=int,
+                        default=1,
+                        help='ID книги с которой начать скачивание')
+    parser.add_argument('--end_id',
+                        type=int,
+                        default=10,
+                        help='ID книги, которой закончить скачивание')
 
-os.makedirs('books', exist_ok=True)
-os.makedirs('images', exist_ok=True)
+    args = parser.parse_args()
 
-download_url = f'https://tululu.org/txt.php'
-url = 'https://tululu.org/'
-for book_id in range(1, 11):
-    book_url = f'https://tululu.org/b{book_id}/'
-    params = {
-    'id': book_id
-    }
-    try:
-        response = requests.get(download_url, params=params)
-        response.raise_for_status()
-        check_for_redirect(response)
-    except HTTPError:
-        continue
+    os.makedirs('books', exist_ok=True)
+    os.makedirs('images', exist_ok=True)
 
-    title, author, img_url, comments, genres = parse_book_page(url,book_url)
-    download_txt(response,
+    download_url = f'https://tululu.org/txt.php'
+    url = 'https://tululu.org/'
+
+    for book_id in range(args.start_id, args.end_id + 1):
+        book_url = f'https://tululu.org/b{book_id}/'
+        params = {
+        'id': book_id
+        }
+        try:
+            response = requests.get(download_url, params=params)
+            response.raise_for_status()
+            check_for_redirect(response)
+        except HTTPError:
+            continue
+
+        title, author, img_url, comments, genres = parse_book_page(url,book_url)
+        download_txt(response,
                   title,
+                  comments,
                   book_id)
     
-    download_image(img_url,
+        download_image(img_url,
                    book_id)
-    print(f'Заголовок: {title}\nАвтор: {author}\nЖанры: {genres}')
+        print(f'Заголовок: {title}\nАвтор: {author}\nЖанры: {genres}')
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
 
 
 
