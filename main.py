@@ -44,6 +44,16 @@ def get_comments(book_url):
     return comments
 
 
+def get_genres(book_url):
+    response = requests.get(book_url)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, 'lxml')
+    genres_elements = soup.find('span', class_='d_book').find_all('a')
+    genres = [genre.text for genre in genres_elements]
+
+    return genres
+
+
 def download_txt(response, title,book_id, folder='books/'):
     sanitized_title = sanitize_filename(title)
     filename = f'{book_id}.{sanitized_title}.txt'
@@ -68,7 +78,7 @@ os.makedirs('images', exist_ok=True)
 
 download_url = f'https://tululu.org/txt.php'
 
-for book_id in range(1, 11):
+""" for book_id in range(1, 11):
     book_url = f'https://tululu.org/b{book_id}/'
     params = {
     'id': book_id
@@ -84,8 +94,11 @@ for book_id in range(1, 11):
     download_txt(response,
                   title,
                   book_id)
-    image_url = get_img_url(book_url)
+    image_url = get_image_url(book_url)
     download_image(img_url,
                    book_id)
-    comments = get_comments(book_url)
+    comments = get_comments(book_url) """
+
+
+
 
