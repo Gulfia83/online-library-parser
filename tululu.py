@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin, urlsplit, unquote
 import argparse
+import sys
 
 
 
@@ -55,6 +56,7 @@ def download_image(img_url, book_id, folder='images/'):
     with open(os.path.join(folder, img_name), 'wb') as file:
         file.write(response.content)
 
+
 def main():
     parser = argparse.ArgumentParser(
         description='Скачивание книг с сайта tululu.org'
@@ -79,13 +81,14 @@ def main():
     for book_id in range(args.start_id, args.end_id + 1):
         book_url = f'https://tululu.org/b{book_id}/'
         params = {
-        'id': book_id
+            'id': book_id
         }
         try:
             response = requests.get(download_url, params=params)
             response.raise_for_status()
             check_for_redirect(response)
         except HTTPError:
+            print(f'Redirection occured from {book_url} to {response.url}')
             continue
 
         title, img_url, comments, genres = parse_book_page(url, book_url)
