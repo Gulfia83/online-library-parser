@@ -14,10 +14,15 @@ def check_for_redirect(response):
         raise HTTPError('Redirection occurred')
     
 
-def parse_book_page(url, book_url):
+def fetch_book_page(book_url):
     response = requests.get(book_url)
     response.raise_for_status()
-    soup = BeautifulSoup(response.text, 'lxml')
+    page_content = response.text
+    return page_content
+
+
+def parse_book_page(url, page_content):
+    soup = BeautifulSoup(page_content, 'lxml')
     title_tag = soup.find('h1')
     title_text = title_tag.text.split('::')
     title = title_text[0].strip() if title_tag else None
@@ -93,7 +98,8 @@ def main():
                 response.raise_for_status()
                 check_for_redirect(response)
 
-                title, img_url, comments, genres = parse_book_page(url, book_url)
+                page_content = fetch_book_page(book_url)
+                title, img_url, comments, genres = parse_book_page(url, page_content)
                 if 'Научная фантастика' in genres:
                     download_txt(response,
                             title,
