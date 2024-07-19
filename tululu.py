@@ -45,10 +45,12 @@ def download_txt(response, title, comments, book_id, genres, folder='books/'):
     sanitized_title = sanitize_filename(title)
     filename = f'{book_id}.{sanitized_title}.txt'
     with open(os.path.join(folder, filename), 'w', encoding='utf-8') as file:
+        file.write('Жанр:\n\n')
         for genre in genres:
-            file.write(genre + '\n\n')
+            file.write(f'{genre}\n\n')
+        file.write('Комментарии:\n\n')
         for comment in comments:
-            file.write(comment + '\n\n')
+            file.write(f'{comment}\n\n')
         file.write(response.text)
 
 
