@@ -23,14 +23,14 @@ def fetch_book_page(book_url):
     return page_content
 
 
-def parse_book_page(url, page_content):
+def parse_book_page(book_url, page_content):
     soup = BeautifulSoup(page_content, 'lxml')
     title_tag = soup.find('h1')
     title_text = title_tag.text.split('::')
     title = title_text[0].strip() if title_tag else None
 
     book_img_src = soup.find(class_='bookimage').find('img')['src']
-    img_url = urljoin(url, book_img_src) if book_img_src else None
+    img_url = urljoin(book_url, book_img_src) if book_img_src else None
 
     comments_elements = soup.find_all('div', class_='texts')
     comments = [comment.find('span', class_='black').text for comment in comments_elements]
@@ -83,7 +83,6 @@ def main():
     os.makedirs('images', exist_ok=True)
 
     download_url = f'https://tululu.org/txt.php'
-    url = 'https://tululu.org/'
 
     max_retries = 5
 
@@ -101,7 +100,7 @@ def main():
                 check_for_redirect(response)
 
                 page_content = fetch_book_page(book_url)
-                title, img_url, comments, genres = parse_book_page(url, page_content)
+                title, img_url, comments, genres = parse_book_page(book_url, page_content)
                 if 'Научная фантастика' in genres:
                     download_txt(response,
                             title,
