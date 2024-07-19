@@ -17,7 +17,9 @@ def check_for_redirect(response):
 def fetch_book_page(book_url):
     response = requests.get(book_url)
     response.raise_for_status()
+    check_for_redirect(response)
     page_content = response.text
+
     return page_content
 
 
