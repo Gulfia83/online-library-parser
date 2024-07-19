@@ -2,7 +2,7 @@
 [Russian](RU_README.md)
 
 ## Description
-This program is designed to download science fiction books from the site tululu.org. You can select a range of book IDs to download and the program will download them for you.
+This program is designed to download science fiction books from the site [tululu.org](https://tululu.org/). You can select a range of book IDs to download and the program will download them for you.
 
 ## Installation
 1. Install Python.
