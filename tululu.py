@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin, urlsplit, unquote
 import argparse
-import sys
+from time import sleep
 
 
 
@@ -78,30 +78,45 @@ def main():
     download_url = f'https://tululu.org/txt.php'
     url = 'https://tululu.org/'
 
+    max_retries = 5
+
     for book_id in range(args.start_id, args.end_id + 1):
         book_url = f'https://tululu.org/b{book_id}/'
         params = {
             'id': book_id
         }
-        try:
-            response = requests.get(download_url, params=params)
-            response.raise_for_status()
-            check_for_redirect(response)
-        except HTTPError:
-            print(f'Redirection occured from {book_url} to {response.url}')
-            continue
 
-        title, img_url, comments, genres = parse_book_page(url, book_url)
-        if 'Научная фантастика' in genres:
-            download_txt(response,
-                    title,
-                    comments,
-                    book_id,
-                    genres)
+        retries = 0
+        while retries < max_retries:
+            try:
+                response = requests.get(download_url, params=params)
+                response.raise_for_status()
+                check_for_redirect(response)
+
+                title, img_url, comments, genres = parse_book_page(url, book_url)
+                if 'Научная фантастика' in genres:
+                    download_txt(response,
+                            title,
+                            comments,
+                            book_id,
+                            genres)
     
-            download_image(img_url,
-                    book_id)
+                    download_image(img_url,
+                            book_id)
+                break
+                    
+            except HTTPError:
+                print(f'Redirection occured from {book_url} to {response.url}')
+                break
 
+            except requests.ConnectionError:
+                retries += 1
+                print(f'Connection error for book {book_id}')
+                sleep(5)
+
+        else:
+            continue
+        
 
 if __name__ == "__main__":
     main()
