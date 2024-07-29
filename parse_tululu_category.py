@@ -6,6 +6,7 @@ from urllib.parse import urljoin, urlsplit, unquote
 from tululu import check_for_redirect, download_image, download_txt, parse_book_page
 import json
 from time import sleep
+import argparse
 
 
 def fetch_page(url):
@@ -28,6 +29,19 @@ def fetch_books_urls(url, page_content):
     return books_urls_per_page
 
 
+parser = argparse.ArgumentParser(
+        description='Скачивание книг с сайта tululu.org'
+    )
+parser.add_argument('--start_page',
+                    type=int,
+                    default=1,
+                    help='номер страницы, с которой начать скачивание')
+parser.add_argument('--end_page',
+                    type=int,
+                    default=702,
+                    help='номер страницы, которой закончить скачивание')
+
+args = parser.parse_args()
 os.makedirs('books', exist_ok=True)
 os.makedirs('images', exist_ok=True)
 
@@ -35,7 +49,7 @@ download_url = 'https://tululu.org/txt.php'
 
 books_urls = []
 books_descriptions = []
-for page in range(1, 2):
+for page in range(args.start_page, args.end_page):
     page_url = f'https://tululu.org/l55/{page}'
     page_content = fetch_page(page_url)
     books_urls.extend(fetch_books_urls(page_url, page_content))
@@ -77,6 +91,6 @@ for book_url in books_urls:
 
     else:
         continue
-  
+
     with open('books_descriptions.json', 'w', encoding='utf8') as json_file:
         json.dump(books_descriptions, json_file, indent=4, ensure_ascii=False)
