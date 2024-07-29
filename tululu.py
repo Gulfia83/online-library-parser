@@ -12,7 +12,7 @@ from time import sleep
 def check_for_redirect(response):
     if response.history:
         raise HTTPError('Redirection occurred')
-    
+
 
 def fetch_book_page(book_url):
     response = requests.get(book_url)
@@ -25,22 +25,20 @@ def fetch_book_page(book_url):
 
 def parse_book_page(book_url, page_content):
     soup = BeautifulSoup(page_content, 'lxml')
-    title_tag = soup.find('h1')
+    title_tag = soup.select_one('h1')
     title, author = title_tag.text.split('::') if title_tag else None
-    book_img_src = soup.find(class_='bookimage').find('img')['src']
+    book_img_src = soup.select_one('.bookimage img')['src']
     img_url = urljoin(book_url, book_img_src) if book_img_src else None
 
-    comments_elements = soup.find_all('div', class_='texts')
-    comments = [comment.find('span', class_='black').text for comment in comments_elements]
+    comments = soup.select('.texts .black')
 
-    genres_elements = soup.find('span', class_='d_book').find_all('a')
-    genres = [genre.text for genre in genres_elements]
-    
+    genres = soup.select('span.d_book a')
+
     book_description = {
         'title': title.strip(),
         'author': author.strip(),
-        'comments': [comment for comment in comments],
-        'genres': [genre for genre in genres]
+        'comments': [comment.text for comment in comments],
+        'genres': [genre.text for genre in genres]
     }
     return book_description, img_url
 
@@ -50,6 +48,7 @@ def download_txt(response, title, book_id, folder='books/'):
     filename = f'{book_id}.{sanitized_title}.txt'
     with open(os.path.join(folder, filename), 'w', encoding='utf-8') as file:
         file.write(response.text)
+    return os.path.join(folder, filename)
 
 
 def download_image(img_url, book_id, folder='images/'):
@@ -62,6 +61,7 @@ def download_image(img_url, book_id, folder='images/'):
     img_name = f'{book_id}.{extension}' if 'nopic.gif' not in path else 'nopic.gif'
     with open(os.path.join(folder, img_name), 'wb') as file:
         file.write(response.content)
+    return os.path.join(folder, img_name)
 
 
 def main():
@@ -100,16 +100,17 @@ def main():
                 check_for_redirect(response)
 
                 page_content = fetch_book_page(book_url)
-                title, img_url, comments, genres = parse_book_page(book_url, page_content)
-                if 'Деловая литература' in genres:
-                    download_txt(response,
-                            title,
-                            book_id)
-    
-                    download_image(img_url,
-                            book_id)
+                book_description, img_url = parse_book_page(book_url, page_content)
+                title = book_description['title']
+
+                download_txt(response,
+                        title,
+                        book_id)
+                  
+                download_image(img_url,
+                        book_id)
                 break
-                    
+
             except HTTPError:
                 print(f'Redirection occured from {book_url} to {response.url}')
                 break
@@ -121,7 +122,7 @@ def main():
 
         else:
             continue
-        
+    
 
 if __name__ == "__main__":
     main()

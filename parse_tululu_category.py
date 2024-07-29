@@ -18,14 +18,14 @@ def fetch_page(url):
 
 def fetch_books_urls(url, page_content):
     soup = BeautifulSoup(page_content, 'lxml')
-    book_elements = soup.find_all('table', class_='d_book')
-    book_urls_src = [book_element.find('a')['href'] for book_element in book_elements]
-    books_urls = []
+    book_elements = soup.select('.d_book .bookimage a')
+    book_urls_src = [book_element['href'] for book_element in book_elements]
+    books_urls_per_page = []
     for book_url_src in book_urls_src:
         book_url = urljoin(url, book_url_src)
-        books_urls.append(book_url)
+        books_urls_per_page.append(book_url)
 
-    return books_urls
+    return books_urls_per_page
 
 
 os.makedirs('books', exist_ok=True)
@@ -35,10 +35,10 @@ download_url = 'https://tululu.org/txt.php'
 
 books_urls = []
 books_descriptions = []
-for page in range(100):
-    url = f'https://tululu.org/l55/{page}'
-    page_content = fetch_page(url)
-    books_urls.extend(fetch_books_urls(url, page_content))
+for page in range(1, 2):
+    page_url = f'https://tululu.org/l55/{page}'
+    page_content = fetch_page(page_url)
+    books_urls.extend(fetch_books_urls(page_url, page_content))
 
 max_retries = 5
 
@@ -59,15 +59,13 @@ for book_url in books_urls:
             book_description, img_url = parse_book_page(book_url, book_page_content)
             title = book_description['title']
             book_description['book_path'] = download_txt(response,
-                        title,
-                        book_id)
-    
+                                                         title,
+                                                         book_id)
             book_description['img_src'] = download_image(img_url,
-                            book_id)
-                
+                                                         book_id)
             books_descriptions.append(book_description)
-            break 
-              
+            break
+             
         except HTTPError:
             print(f'Redirection occured from {book_url} to {response.url}')
             break
@@ -79,6 +77,6 @@ for book_url in books_urls:
 
     else:
         continue
-   
+  
     with open('books_descriptions.json', 'w', encoding='utf8') as json_file:
         json.dump(books_descriptions, json_file, indent=4, ensure_ascii=False)
