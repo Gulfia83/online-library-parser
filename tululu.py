@@ -26,9 +26,7 @@ def fetch_book_page(book_url):
 def parse_book_page(book_url, page_content):
     soup = BeautifulSoup(page_content, 'lxml')
     title_tag = soup.find('h1')
-    title_text = title_tag.text.split('::')
-    title = title_text[0].strip() if title_tag else None
-
+    title, author = title_tag.text.split('::') if title_tag else None
     book_img_src = soup.find(class_='bookimage').find('img')['src']
     img_url = urljoin(book_url, book_img_src) if book_img_src else None
 
@@ -37,20 +35,20 @@ def parse_book_page(book_url, page_content):
 
     genres_elements = soup.find('span', class_='d_book').find_all('a')
     genres = [genre.text for genre in genres_elements]
+    
+    book_description = {
+        'title': title.strip(),
+        'author': author.strip(),
+        'comments': [comment for comment in comments],
+        'genres': [genre for genre in genres]
+    }
+    return book_description, img_url
 
-    return title, img_url, comments, genres
 
-
-def download_txt(response, title, comments, book_id, genres, folder='books/'):
+def download_txt(response, title, book_id, folder='books/'):
     sanitized_title = sanitize_filename(title)
     filename = f'{book_id}.{sanitized_title}.txt'
     with open(os.path.join(folder, filename), 'w', encoding='utf-8') as file:
-        file.write('Жанр:\n\n')
-        for genre in genres:
-            file.write(f'{genre}\n\n')
-        file.write('Комментарии:\n\n')
-        for comment in comments:
-            file.write(f'{comment}\n\n')
         file.write(response.text)
 
 
@@ -84,7 +82,7 @@ def main():
     os.makedirs('books', exist_ok=True)
     os.makedirs('images', exist_ok=True)
 
-    download_url = f'https://tululu.org/txt.php'
+    download_url = 'https://tululu.org/txt.php'
 
     max_retries = 5
 
@@ -103,12 +101,10 @@ def main():
 
                 page_content = fetch_book_page(book_url)
                 title, img_url, comments, genres = parse_book_page(book_url, page_content)
-                if 'Научная фантастика' in genres:
+                if 'Деловая литература' in genres:
                     download_txt(response,
                             title,
-                            comments,
-                            book_id,
-                            genres)
+                            book_id)
     
                     download_image(img_url,
                             book_id)
