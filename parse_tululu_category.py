@@ -40,8 +40,17 @@ parser.add_argument('--end_page',
                     type=int,
                     default=702,
                     help='номер страницы, которой закончить скачивание')
+parser.add_argument('--skip_txt',
+                    action='store_true',
+                    default=False,
+                    help='не скачивать книги')
+parser.add_argument('--skip_img',
+                    action='store_true',
+                    default=False,
+                    help='не скачивать обложки')
 
 args = parser.parse_args()
+
 os.makedirs('books', exist_ok=True)
 os.makedirs('images', exist_ok=True)
 
@@ -83,11 +92,13 @@ for book_url in books_urls:
             book_page_content = fetch_page(book_url)
             book_description, img_url = parse_book_page(book_url, book_page_content)
             title = book_description['title']
-            book_description['book_path'] = download_txt(response,
-                                                         title,
-                                                         book_id)
-            book_description['img_src'] = download_image(img_url,
-                                                         book_id)
+            if not args.skip_txt:
+                book_description['book_path'] = download_txt(response,
+                                                            title,
+                                                            book_id)
+            if not args.skip_img:
+                book_description['img_src'] = download_image(img_url,
+                                                            book_id)
             books_descriptions.append(book_description)
             break
              
