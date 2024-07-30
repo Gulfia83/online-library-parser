@@ -48,11 +48,12 @@ parser.add_argument('--skip_img',
                     action='store_true',
                     default=False,
                     help='не скачивать обложки')
+parser.add_argument('--dest_folder',
+                    type=str,
+                    default='',
+                    help='путь к каталогу с книгами, обложками, JSON')
 
 args = parser.parse_args()
-
-os.makedirs('books', exist_ok=True)
-os.makedirs('images', exist_ok=True)
 
 download_url = 'https://tululu.org/txt.php'
 
@@ -95,10 +96,12 @@ for book_url in books_urls:
             if not args.skip_txt:
                 book_description['book_path'] = download_txt(response,
                                                             title,
-                                                            book_id)
+                                                            book_id,
+                                                            args.dest_folder)
             if not args.skip_img:
                 book_description['img_src'] = download_image(img_url,
-                                                            book_id)
+                                                            book_id,
+                                                            args.dest_folder)
             books_descriptions.append(book_description)
             break
              
@@ -114,5 +117,5 @@ for book_url in books_urls:
     else:
         continue
 
-    with open('books_descriptions.json', 'w', encoding='utf8') as json_file:
+    with open(os.path.join(args.dest_folder, 'books_descriptions.json'), 'w', encoding='utf8') as json_file:
         json.dump(books_descriptions, json_file, indent=4, ensure_ascii=False)

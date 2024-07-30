@@ -43,7 +43,9 @@ def parse_book_page(book_url, page_content):
     return book_description, img_url
 
 
-def download_txt(response, title, book_id, folder='books/'):
+def download_txt(response, title, book_id, path=''):
+    folder = os.path.join(path, 'books/')
+    os.makedirs(folder, exist_ok=True)
     sanitized_title = sanitize_filename(title)
     filename = f'{book_id}.{sanitized_title}.txt'
     with open(os.path.join(folder, filename), 'w', encoding='utf-8') as file:
@@ -51,7 +53,9 @@ def download_txt(response, title, book_id, folder='books/'):
     return os.path.join(folder, filename)
 
 
-def download_image(img_url, book_id, folder='images/'):
+def download_image(img_url, book_id, path=''):
+    folder = os.path.join(path, 'images/')
+    os.makedirs(folder, exist_ok=True)
     response = requests.get(img_url)
     response.raise_for_status()
 
@@ -79,8 +83,8 @@ def main():
 
     args = parser.parse_args()
 
-    os.makedirs('books', exist_ok=True)
-    os.makedirs('images', exist_ok=True)
+    #os.makedirs('books', exist_ok=True)
+    #os.makedirs('images', exist_ok=True)
 
     download_url = 'https://tululu.org/txt.php'
 
