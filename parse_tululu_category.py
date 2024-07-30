@@ -49,12 +49,23 @@ download_url = 'https://tululu.org/txt.php'
 
 books_urls = []
 books_descriptions = []
-for page in range(args.start_page, args.end_page):
-    page_url = f'https://tululu.org/l55/{page}'
-    page_content = fetch_page(page_url)
-    books_urls.extend(fetch_books_urls(page_url, page_content))
-
 max_retries = 5
+for page in range(args.start_page, args.end_page):
+    retries = 0
+    while retries < max_retries:
+        try:
+            page_url = f'https://tululu.org/l55/{page}'
+            page_content = fetch_page(page_url)
+            books_urls.extend(fetch_books_urls(page_url, page_content))
+            break
+        except HTTPError:
+            print(f'Redirection occured from {page_url}')
+            break
+        except ConnectionError:
+            retries += 1
+            print('Connection error. Retry in 5 sec')
+            sleep(5)
+
 
 for book_url in books_urls:
     split_book_url = urlsplit(book_url)
