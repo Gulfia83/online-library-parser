@@ -38,9 +38,10 @@ def parse_book_page(book_url, page_content):
         'title': title.strip(),
         'author': author.strip(),
         'comments': [comment.text for comment in comments],
-        'genres': [genre.text for genre in genres]
+        'genres': [genre.text for genre in genres],
+        'img_url': img_url
     }
-    return book_description, img_url
+    return book_description
 
 
 def download_txt(response, title, book_id, path=''):
@@ -83,9 +84,6 @@ def main():
 
     args = parser.parse_args()
 
-    #os.makedirs('books', exist_ok=True)
-    #os.makedirs('images', exist_ok=True)
-
     download_url = 'https://tululu.org/txt.php'
 
     max_retries = 5
@@ -104,8 +102,9 @@ def main():
                 check_for_redirect(response)
 
                 page_content = fetch_book_page(book_url)
-                book_description, img_url = parse_book_page(book_url, page_content)
+                book_description = parse_book_page(book_url, page_content)
                 title = book_description['title']
+                img_url = book_description['img_url']
 
                 download_txt(response,
                         title,
