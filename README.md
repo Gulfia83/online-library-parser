@@ -32,7 +32,7 @@ Where <start_ID> is the ID of the first book to download, <end_ID> is the ID of 
 Example:
 
 ```bash
-python tulu.py --start_id 20 --end_id 30
+python tululu.py --start_id 20 --end_id 30
 ```
 This will load books with IDs from 20 to 30 inclusive.
 
@@ -49,13 +49,13 @@ After executing the program, the books will be saved in the corresponding direct
 - --dest_folder path to directory with parsing results: covers, books, JSON
 
 ```bash
-python tululu.py --start_page <start page> --end_page <end page not inclusive>
+python parse_tululu_category.py --start_page <start page> --end_page <end page not inclusive>
 ```
 
 Example:
 
 ```bash
-python tulu.py --start_page 700 --end_page 701
+python parse_tululu_category.py --start_page 700 --end_page 701
 ```
 This will download books from page 700.
 

@@ -31,7 +31,7 @@ python tululu.py --start_id <начальный_ID> --end_id <конечный_I
 Пример:
 
 ```bash
-python tulu.py --start_id 20 --end_id 30
+python tululu.py --start_id 20 --end_id 30
 ```
 Это загрузит книги с идентификаторами от 20 до 30 включительно.
 
@@ -48,13 +48,13 @@ python tulu.py --start_id 20 --end_id 30
 - --dest_folder  путь к каталогу с результатами парсинга: обложкам, книгам, JSON
 
 ```bash
-python tululu.py --start_page <начальная страница> --end_page <конечная страница не включительно>
+python parse_tululu_category.py --start_page <начальная страница> --end_page <конечная страница не включительно>
 ```
 
 Пример:
 
 ```bash
-python tulu.py --start_page 700 --end_page 701
+python parse_tululu_category.py --start_page 700 --end_page 701
 ```
 Это загрузит книги со страницы 700.
 
