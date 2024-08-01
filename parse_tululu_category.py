@@ -115,8 +115,8 @@ def main():
                 print(f'Connection error for book {book_id}')
                 sleep(5)
 
-        with open(os.path.join(args.dest_folder, 'books_descriptions.json'), 'w', encoding='utf8') as json_file:
-            json.dump(books_descriptions, json_file, indent=4, ensure_ascii=False)
+    with open(os.path.join(args.dest_folder, 'books_descriptions.json'), 'w', encoding='utf8') as json_file:
+        json.dump(books_descriptions, json_file, indent=4, ensure_ascii=False)
 
 if __name__ == "__main__":
     main()
